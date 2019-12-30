@@ -1,0 +1,31 @@
+
+---
+# This playbook runs a basic DF command.
+
+- hosts: kfprod
+  #remote_user: root
+
+  tasks:
+  - name: find disk space available.
+    command: df -kh
+
+  - name: Copy script file from local to remote
+    become: true
+    copy:
+      src: "kf-log-del.sh"
+      dest: "/home/centos/kf-log-del.sh"
+      owner: "kafka"
+      group: "root"
+      mode: '0740'
+      backup: no
+
+  - name: Execute the command in remote shell; stdout goes to the specified file on the remote.
+    become: yes
+    become_user: kafka
+    shell: /home/centos/kf-log-del.sh
+
+  - name: find disk space available.
+    command: df -kh
+
+  - name: find disk space available.
+    command: systemctl status kafka.service

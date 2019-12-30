@@ -1,28 +1,34 @@
 
 ---
-# This playbook runs a basic DF command.
+# This playbook runs shell script to purge logs oldder than 5 days.
 
-- hosts: kfprod
+- hosts: kfstg
   #remote_user: root
+
+  vars:
+    #local_folder: /home/your-local/service
+    remote_folder: /home/kf_user
+    your_own_user: kf_user
+    sh_file: kf-log-del.sh
 
   tasks:
   - name: find disk space available.
     command: df -kh
 
-  - name: Copy script file from local to remote
+  - name: Copy script file from local to remote 
     become: true
     copy:
-      src: "kf-log-del.sh"
-      dest: "/home/centos/kf-log-del.sh"
-      owner: "kafka"
+      src: "{{ sh_file }}"
+      dest: "{{ remote_folder }}/{{ sh_file }}"
+      owner: "{{ your_own_user }}"
       group: "root"
       mode: '0740'
       backup: no
 
   - name: Execute the command in remote shell; stdout goes to the specified file on the remote.
     become: yes
-    become_user: kafka
-    shell: /home/centos/kf-log-del.sh
+    become_user: "{{ your_own_user }}"
+    command: bash "{{ remote_folder }}/{{ sh_file }}"
 
   - name: find disk space available.
     command: df -kh
